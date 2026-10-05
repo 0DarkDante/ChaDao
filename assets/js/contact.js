@@ -7,6 +7,11 @@
   if (!form) return;
 
   const toast = document.getElementById('contactToast');
+  const message = document.getElementById('cfMessage');
+  const fromCart = new URLSearchParams(location.search).has('order');
+  if (message && fromCart && window.ChadaoCart && !message.value.trim()) {
+    message.value = window.ChadaoCart.summary();
+  }
 
   form.addEventListener('submit', event => {
     event.preventDefault();
@@ -23,6 +28,7 @@
       toast._hideTimer = setTimeout(() => toast.classList.remove('show'), 3400);
     }
 
+    if (fromCart && window.ChadaoCart) window.ChadaoCart.clear();
     form.reset();
   });
 })();

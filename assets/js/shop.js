@@ -141,18 +141,33 @@
     });
   });
 
-  // Перехід із мегаменю/карток на головній (chai.html#puer тощо) —
-  // одразу застосовуємо відповідний фільтр і гортаємо до каталогу.
-  const hash = window.location.hash.replace('#', '');
-  const matchChip = chips.find(c => c.dataset.filter === hash);
-  if (matchChip) {
+  // Перехід із мегаменю/карток (chai.html#puer тощо) — застосовуємо
+  // відповідний фільтр і гортаємо до каталогу. Обробляємо не лише перше
+  // завантаження сторінки, а й клік по категорії, коли ви вже на сторінці
+  // «Чай»: у цьому разі URL-хеш міняється без перезавантаження, тому
+  // додатково стежимо за подією hashchange.
+  function applyHashFilter() {
+    const hash = window.location.hash.replace('#', '');
+    const matchChip = chips.find(c => c.dataset.filter === hash);
+    if (!matchChip) return false;
     setActiveChip(hash);
-    if (shopSection) {
-      window.addEventListener('load', () => {
-        shopSection.scrollIntoView({ block: 'start' });
-      });
-    }
+    visibleLimit = PAGE_SIZE;
+    return true;
   }
 
+  const matchedOnLoad = applyHashFilter();
   applyFilters();
+
+  if (matchedOnLoad && shopSection) {
+    window.addEventListener('load', () => {
+      shopSection.scrollIntoView({ block: 'start' });
+    });
+  }
+
+  window.addEventListener('hashchange', () => {
+    if (applyHashFilter()) {
+      applyFilters();
+      if (shopSection) shopSection.scrollIntoView({ block: 'start' });
+    }
+  });
 })();

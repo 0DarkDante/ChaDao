@@ -49,6 +49,13 @@
   // одразу після завантаження сторінки.
   function syncCardButtons() {
     const ids = new Set(favorites.map(f => f.id));
+    document.querySelectorAll('.js-fav-toggle').forEach(btn => {
+      const active = ids.has(btn.dataset.favId);
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', String(active));
+      const label = btn.querySelector('[data-label-on]');
+      if (label) label.textContent = active ? label.dataset.labelOn : label.dataset.labelOff;
+    });
     document.querySelectorAll('.product-card').forEach(card => {
       const btn = card.querySelector('.product-wishlist');
       if (!btn || !card.id) return;
@@ -150,6 +157,17 @@
   }
 
   document.addEventListener('click', event => {
+    const generic = event.target.closest('.js-fav-toggle');
+    if (generic) {
+      const d = generic.dataset;
+      if (favorites.some(f => f.id === d.favId)) {
+        favorites = favorites.filter(f => f.id !== d.favId);
+      } else {
+        favorites.push({ id: d.favId, name: d.favName, price: d.favPrice, image: d.favImage, page: d.favPage });
+      }
+      persistAndRefresh();
+      return;
+    }
     const btn = event.target.closest('.product-wishlist');
     if (!btn) return;
     const card = btn.closest('.product-card');
